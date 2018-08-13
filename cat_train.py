@@ -36,22 +36,26 @@ class CatTrainer:
         self.X = self.train_df.drop(label, axis=1)
         self.y = self.train_df[label]
 
+    def create_model(self, **kwargs):
+        params = self._default_args_or_kwargs(**kwargs)
+        if not self.model:
+            self.model = CatBoostClassifier(**params)
+        else:
+            raise ValueError("Cannot overwrite existing model")
+
     def train_model(self, train_size=0.75, random_state=42, **kwargs):
         X_train, X_validation, y_train, y_validation = train_test_split(self.X, self.y, train_size=train_size,
                                                                         random_state=random_state)
         if not self.categorical_features_indices:
             self.categorical_features_indices = np.where(self.X.dtypes != np.float)[0]
-        params = self._default_args_or_kwargs(**kwargs)
-        model = CatBoostClassifier(
-            **params
-        )
-        model.fit(
+        if not self.model:
+            self.create_model(**kwargs)
+        self.model.fit(
             X_train, y_train,
             cat_features=self.categorical_features_indices,
             eval_set=(X_validation, y_validation),
             logging_level='Verbose',
         )
-        self.model = model
 
     def model_cross_validation(self):
         cv_data = cv(
