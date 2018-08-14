@@ -5,7 +5,7 @@ import numpy as np
 
 class CatTrainer:
 
-    def __init__(self, train_df, test_df):
+    def __init__(self, train_df, test_df=None):
         self.train_df = train_df
         self.test_df = test_df
         self.model = None
@@ -15,7 +15,8 @@ class CatTrainer:
 
     def _replace_null_values(self, value, inplace=True):
         self.train_df.fillna(value, inplace=inplace)
-        self.test_df.fillna(value, inplace=inplace)
+        if self.test_df:
+            self.test_df.fillna(value, inplace=inplace)
 
     def _default_args_or_kwargs(self, **kwargs):
         params = {
@@ -77,7 +78,7 @@ if __name__ == '__main__':
     c = CatTrainer(train_df, test_df)
     c.prepare_x_y('Survived')
     print(c.X, c.y)
-    c.train_model(types=[np.float])
+    c.train_model()
     score = c.model_cross_validation()
     print(score)
     c.save_model('demo')
